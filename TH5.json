@@ -1,0 +1,180 @@
+[
+    {
+        "id": "0141fbe882fe6869",
+        "type": "function",
+        "z": "2ab0c5d5.9535ca",
+        "name": "Generate Data (CSV Format)",
+        "func": "var d = new Date();\nvar date = d.getFullYear();\ndate += \"/\" + (d.getMonth() + 1); // เพิ่ม +1 เพราะเดือนเริ่มที่ 0\ndate += \"/\" + d.getDate();\ndate += \" \" + d.getHours();\ndate += \":\" + d.getMinutes();\ndate += \":\" + d.getSeconds();\n\nvar tempp = msg.payload.temperature;// 0.0 - 50.0\nvar humid = msg.payload.humidity;   // 50.0 - 100.0\n\n// สร้าง String สำหรับบันทึกลง CSV\nvar data = date + \",\" + tempp.toFixed(2) + \",\" + humid.toFixed(2);\n\nmsg.payload = data;\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 430,
+        "y": 400,
+        "wires": [
+            [
+                "5c8cfd9dd5aa60e9"
+            ]
+        ]
+    },
+    {
+        "id": "5c8cfd9dd5aa60e9",
+        "type": "file",
+        "z": "2ab0c5d5.9535ca",
+        "name": "Save to CSV",
+        "filename": "C:\\Users\\User\\OneDrive\\เอกสาร\\microl\\LAB9\\THs.csv",
+        "filenameType": "str",
+        "appendNewline": true,
+        "createDir": false,
+        "overwriteFile": "false",
+        "encoding": "none",
+        "x": 660,
+        "y": 400,
+        "wires": [
+            [
+                "37666f6421910779"
+            ]
+        ]
+    },
+    {
+        "id": "37666f6421910779",
+        "type": "debug",
+        "z": "2ab0c5d5.9535ca",
+        "name": "Debug Output",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 880,
+        "y": 400,
+        "wires": []
+    },
+    {
+        "id": "bd38624933705f4b",
+        "type": "telegram sender",
+        "z": "2ab0c5d5.9535ca",
+        "name": "",
+        "bot": "35956134291f279d",
+        "haserroroutput": false,
+        "outputs": 1,
+        "x": 770,
+        "y": 160,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "8d6ab1bcfbb88e63",
+        "type": "function",
+        "z": "2ab0c5d5.9535ca",
+        "name": "function 5",
+        "func": "let t = msg.payload.temp;\nlet h = msg.payload.humid;\nlet alertMsg = \"\";\n\nconst tmax = 36;\nconst hmax = 50;\n\n// 1. เช็กเงื่อนไข (xxxx = 35, yyyy = 80)\nif (t > tmax && h > hmax) {\n    alertMsg = \"🔥 อุณหภูมิสูงเกินไป: \" + t + \"°C\" + \"💧 ความชื้นสูงเกินไป: \" + h + \"%\";\n} else if (t > tmax) {\n    alertMsg = \"🔥 อุณหภูมิสูงเกินไป: \" + t + \"°C\";\n} else if (h > hmax) {\n    alertMsg = \"💧 ความชื้นสูงเกินไป: \" + h + \"%\";\n}\n\n// 2. ถ้ามีเงื่อนไขที่ตรง (alertMsg ไม่ว่าง) ให้ส่ง Telegram\nif (alertMsg !== \"\") {\n    msg.payload = {\n        chatId: 8782397663,\n        type: 'message',\n        content: \"⚠️ แจ้งเตือนสถานะ!\\n\" + alertMsg\n    };\n    return msg; // ส่งข้อมูลออกไปหา Telegram\n}\n\n// 3. ถ้าไม่เข้าเงื่อนไขเลย ไม่ต้องส่งอะไรออกไป\nreturn null;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 520,
+        "y": 80,
+        "wires": [
+            [
+                "bd38624933705f4b"
+            ]
+        ]
+    },
+    {
+        "id": "5fe6e4763b9da63a",
+        "type": "mqtt in",
+        "z": "2ab0c5d5.9535ca",
+        "name": "",
+        "topic": "weerachot",
+        "qos": "0",
+        "datatype": "auto-detect",
+        "broker": "4a05c8addcbcc667",
+        "nl": false,
+        "rap": true,
+        "rh": 0,
+        "inputs": 0,
+        "x": 180,
+        "y": 240,
+        "wires": [
+            [
+                "0141fbe882fe6869",
+                "8d6ab1bcfbb88e63"
+            ]
+        ]
+    },
+    {
+        "id": "35956134291f279d",
+        "type": "telegram bot",
+        "botname": "Weerachot_bot",
+        "usernames": "",
+        "chatids": "",
+        "baseapiurl": "",
+        "testenvironment": false,
+        "updatemode": "polling",
+        "pollinterval": 300,
+        "usesocks": false,
+        "sockshost": "",
+        "socksprotocol": "socks5",
+        "socksport": 6667,
+        "socksusername": "anonymous",
+        "sockspassword": "",
+        "bothost": "",
+        "botpath": "",
+        "localbothost": "0.0.0.0",
+        "localbotport": 8443,
+        "publicbotport": 8443,
+        "privatekey": "",
+        "certificate": "",
+        "useselfsignedcertificate": false,
+        "sslterminated": false,
+        "verboselogging": false
+    },
+    {
+        "id": "4a05c8addcbcc667",
+        "type": "mqtt-broker",
+        "name": "",
+        "broker": "broker.emqx.io",
+        "port": 1883,
+        "clientid": "",
+        "autoConnect": true,
+        "usetls": false,
+        "protocolVersion": 4,
+        "keepalive": 60,
+        "cleansession": true,
+        "autoUnsubscribe": true,
+        "birthTopic": "",
+        "birthQos": "0",
+        "birthRetain": "false",
+        "birthPayload": "",
+        "birthMsg": {},
+        "closeTopic": "",
+        "closeQos": "0",
+        "closeRetain": "false",
+        "closePayload": "",
+        "closeMsg": {},
+        "willTopic": "",
+        "willQos": "0",
+        "willRetain": "false",
+        "willPayload": "",
+        "willMsg": {},
+        "userProps": "",
+        "sessionExpiry": ""
+    },
+    {
+        "id": "74c5a98ff5f3173b",
+        "type": "global-config",
+        "env": [],
+        "modules": {
+            "node-red-contrib-telegrambot": "17.1.3"
+        }
+    }
+]
